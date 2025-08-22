@@ -467,6 +467,15 @@ function install_openvpn() {
   ((LINE++))
   sed -i "${LINE}"'i rm /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
 
+  LINE=$(($(grep -n 'down)' /etc/openvpn/update-resolv-conf | cut -d ':' -f1) +1))
+  sed -i "${LINE}"'i cp /etc/resolv.conf /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
+
+  LINE=$(($(grep -n 'resolvconf -d' /etc/openvpn/update-resolv-conf | cut -d ':' -f1) +1))
+  # shellcheck disable=SC2016
+  sed -i "${LINE}"'i [ "$((resolvconf -l "tun*" 2>/dev/null || resolvconf -l "tap*") | grep -vE "^(\s*|#.*)$")" ] && /sbin/resolvconf -u || cp /etc/resolv.conf.backup /etc/resolv.conf' /etc/openvpn/update-resolv-conf
+  ((LINE++))
+  sed -i "${LINE}"'i rm /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
+
   add-test-command "openvpn --version"
   add-to-list "OpenVPN,https://openvpn.net/,Fast and Easy Zero-Trust VPN Fully in Your Control"
 }
